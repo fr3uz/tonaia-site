@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório TôNaIA</title>
+<style>
+@page {
+  size: A4;
+  margin: 22mm 18mm 22mm 18mm;
+  @bottom-center {
+    content: "TôNaIA  |  " attr(data-client) "  |  Pág " counter(page);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 7pt;
+    color: #999;
+  }
+}
+@page cover {
+  margin: 0;
+  @bottom-center { content: none; }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #1a1a2e;
+  line-height: 1.5;
+}
+
+/* ===== COVER ===== */
+.cover-page { page: cover; page-break-after: always; }
+.cover-top-bar { height: 6px; background: #6C5CE7; }
+.cover-logo { text-align: center; padding: 30px 0 15px; }
+.cover-logo img { height: 130px; }
+.cover-subtitle { text-align: center; color: #888; font-size: 11pt; letter-spacing: 1px; margin-bottom: 25px; }
+.cover-divider { width: 60px; height: 2px; background: #6C5CE7; margin: 0 auto 25px; }
+.cover-client { text-align: center; font-size: 22pt; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+.cover-location { text-align: center; color: #888; font-size: 10pt; margin-bottom: 30px; }
+
+.cover-score {
+  text-align: center; margin: 30px auto; width: 180px;
+}
+.cover-score-box {
+  width: 180px; height: 130px; border-radius: 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  margin: 0 auto;
+}
+.cover-score-num { font-size: 36pt; font-weight: 800; color: #fff; line-height: 1; }
+.cover-score-label { font-size: 11pt; font-weight: 700; color: #fff; letter-spacing: 3px; margin-top: 6px; }
+
+.cover-status {
+  text-align: center; font-size: 11pt; font-weight: 600; margin: 20px 0 30px;
+}
+.cover-date { text-align: center; color: #999; font-size: 8pt; margin-top: 10px; }
+.cover-footer { text-align: center; color: #bbb; font-size: 8pt; margin-top: 50px; }
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+  position: fixed; top: 0; left: 0; right: 0; height: 4px; background: #6C5CE7;
+}
+
+/* ===== SECTION TITLE ===== */
+.section-title {
+  font-size: 14pt; font-weight: 700; color: #6C5CE7; margin: 8px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #6C5CE7;
+}
+.section-subtitle {
+  font-size: 12pt; font-weight: 700; color: #6C5CE7; margin: 16px 0 6px;
+}
+
+/* ===== TEXT ===== */
+.p { font-size: 10pt; color: #333; margin-bottom: 8px; line-height: 1.6; }
+.p-small { font-size: 9pt; color: #666; margin-bottom: 4px; line-height: 1.5; }
+
+/* ===== TREND BARS ===== */
+.trend-group { margin: 6px 0 14px; }
+.trend-row { margin-bottom: 6px; }
+.trend-label { font-size: 9pt; font-weight: 600; color: #333; display: inline-block; width: 55mm; vertical-align: middle; }
+.trend-bar-wrap { display: inline-block; width: 100mm; height: 8px; background: #e8e8f0; border-radius: 4px; overflow: hidden; vertical-align: middle; }
+.trend-bar-fill { height: 100%; border-radius: 4px; }
+.trend-pct { font-size: 10pt; font-weight: 700; margin-left: 4px; vertical-align: middle; }
+
+/* ===== SCORE CARD (diagnosis page) ===== */
+.score-card {
+  margin: 12px 0; padding: 14px 18px; border-radius: 12px;
+  background: #f4f4fa;
+  border-left: 4px solid;
+  display: flex; align-items: center; gap: 16px;
+}
+.score-card-num { font-size: 28pt; font-weight: 800; line-height: 1; }
+.score-card-info { flex: 1; }
+.score-card-label { font-size: 12pt; font-weight: 700; }
+.score-card-msg { font-size: 9pt; color: #666; margin-top: 2px; }
+
+/* ===== METRIC CARDS (progress bars) ===== */
+.metric-card {
+  margin: 5px 0; padding: 10px 14px 10px 14px; border-radius: 10px;
+  background: #f8f8fc; border-left: 4px solid;
+  page-break-inside: avoid;
+}
+.metric-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.metric-label { font-size: 9pt; font-weight: 600; color: #1a1a2e; }
+.metric-score { font-size: 10pt; font-weight: 700; }
+.bar-bg { height: 6px; background: #ddd; border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; }
+.metric-desc { font-size: 7.5pt; color: #999; margin-top: 4px; }
+
+/* ===== DETAILS LIST ===== */
+.detail-item {
+  padding: 5px 12px; margin: 3px 0; background: #f4f4fa; border-radius: 6px;
+  font-size: 10pt; color: #333;
+}
+
+/* ===== ALERT CARD ===== */
+.alert-card {
+  margin: 8px 0; padding: 12px 14px; border-radius: 10px;
+  background: #fef9e7; border-left: 4px solid #f39c12;
+  page-break-inside: avoid;
+}
+.alert-card .title { font-size: 10pt; font-weight: 700; color: #e67e22; margin-bottom: 4px; }
+.alert-card .item { font-size: 9pt; color: #555; padding: 1px 0; }
+
+/* ===== ACCESS LIST ===== */
+.access-item {
+  padding: 8px 12px; margin: 4px 0; background: #f4f4fa; border-radius: 8px;
+  page-break-inside: avoid;
+}
+.access-item .title { font-size: 10pt; font-weight: 600; color: #6C5CE7; }
+.access-item .desc { font-size: 9pt; color: #888; }
+
+/* ===== CTA BOX ===== */
+.cta-box {
+  margin: 10px 0; padding: 14px 16px; border-radius: 12px;
+  background: #6C5CE7; color: #fff;
+}
+.cta-box .title { font-size: 11pt; font-weight: 700; margin-bottom: 4px; }
+.cta-box .desc { font-size: 9pt; opacity: 0.9; }
+
+/* ===== STATS ===== */
+.stat-item {
+  padding: 6px 0; page-break-inside: avoid;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.stat-val { font-size: 16pt; font-weight: 800; color: #6C5CE7; min-width: 28mm; }
+.stat-desc { font-size: 9pt; color: #555; padding-top: 3px; }
+
+/* ===== PLANOS ===== */
+.plano-item {
+  padding: 8px 14px; margin: 4px 0; background: #f4f4fa; border-radius: 8px;
+  page-break-inside: avoid;
+  display: flex; align-items: center;
+}
+.plano-name { font-size: 10pt; font-weight: 600; min-width: 40mm; }
+.plano-price { font-size: 11pt; font-weight: 700; color: #6C5CE7; min-width: 30mm; }
+.plano-desc { font-size: 9pt; color: #888; }
+
+/* ===== SOURCES PAGE ===== */
+.sources-page { page-break-before: always; text-align: center; padding-top: 30px; }
+.sources-page .logo { margin-bottom: 30px; }
+.sources-page .logo img { height: 140px; }
+.sources-title { font-size: 13pt; font-weight: 700; color: #6C5CE7; margin-bottom: 16px; }
+.source-item { font-size: 9pt; color: #666; margin: 3px 0; }
+
+/* ===== PAGE BREAK HELPERS ===== */
+.page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="page-header"></div>
+
+<!-- COVER -->
+<div class="cover-page">
+  <div class="cover-top-bar"></div>
+  <div class="cover-logo">
+    <img src="{LOGO_SRC}" alt="TôNaIA">
+  </div>
+  <div class="cover-subtitle">RELATÓRIO DE VISIBILIDADE EM INTELIGÊNCIA ARTIFICIAL</div>
+  <div class="cover-divider"></div>
+  <div class="cover-client">{CLIENTE_NOME}</div>
+  <div class="cover-location">{CLIENTE_LOCAL}</div>
+  <div class="cover-score">
+    <div class="cover-score-box" style="background: {SCORE_BG};">
+      <div class="cover-score-num">{NOTA}/10</div>
+      <div class="cover-score-label">{SCORE_LABEL}</div>
+    </div>
+  </div>
+  <div class="cover-status" style="color: {SCORE_BG};">{STATUS_MSG}</div>
+  <div class="cover-date">Relatório gerado em {DATA_AUD}</div>
+  <div class="cover-footer">Auditoria realizada pelo motor TôNaIA &mdash; www.tonaia.com.br</div>
+</div>
+
+<!-- MAIN CONTENT -->
+{MAIN_CONTENT}
+
+<!-- SOURCES PAGE -->
+<div class="sources-page">
+  <div class="logo"><img src="{LOGO_SRC}" alt="TôNaIA"></div>
+  <div class="sources-title">FONTES CONSULTADAS</div>
+  {FONTES}
+</div>
+
+</body>
+</html>
