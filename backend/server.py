@@ -3,6 +3,7 @@ from flask_cors import CORS
 from auditor import SiteAuditor
 from gbp_auditor import GBPAuditor
 from relatorio import gerar_relatorio
+from prospector import buscar_estabelecimentos, salvar_leads, registrar_prospeccao, listar_leads, resumo, exportar_csv
 import sqlite3
 import json
 import os
@@ -206,6 +207,48 @@ def gerar_relatorio_pdf():
     pdf_bytes = gerar_relatorio(dados)
     return Response(pdf_bytes, mimetype='application/pdf',
         headers={'Content-Disposition': 'attachment; filename=relatorio_tonaia.pdf'})
+
+@app.route('/api/prospectar', methods=['POST'])
+def prospectar():
+    data = request.json
+    nicho = data.get('nicho', '').strip()
+    cidade = data.get('cidade', '').strip()
+    max_res = int(data.get('max_resultados', 20))
+    if not nicho or not cidade:
+        return jsonify({'erro': 'nicho e cidade sao obrigatorios'}), 400
+    try:
+        leads = buscar_estabelecimentos(nicho, cidade, max_res)
+        salvos = salvar_leads(leads)
+        registrar_prospeccao(nicho, cidade, len(leads))
+        return jsonify({'encontrados': len(leads), 'salvos': salvos, 'leads': leads})
+    except ValueError as e:
+        return jsonify({'erro': str(e)}), 400
+    except PermissionError as e:
+        return jsonify({'erro': str(e)}), 403
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
+
+@app.route('/api/leads', methods=['GET'])
+def leads_listar():
+    categoria = request.args.get('categoria', '')
+    cidade = request.args.get('cidade', '')
+    com_telefone = request.args.get('com_telefone', '')
+    leads = listar_leads(
+        categoria=categoria or None,
+        cidade=cidade or None,
+        com_telefone=bool(com_telefone),
+    )
+    return jsonify(leads)
+
+@app.route('/api/leads/resumo', methods=['GET'])
+def leads_resumo():
+    return jsonify(resumo())
+
+@app.route('/api/leads/exportar', methods=['GET'])
+def leads_exportar():
+    caminho = os.path.join(os.path.dirname(__file__), '..', 'data', 'leads_export.csv')
+    exportar_csv(caminho)
+    return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'data'), 'leads_export.csv', as_attachment=True)
 
 if __name__ == '__main__':
     init_db()

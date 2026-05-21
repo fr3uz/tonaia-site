@@ -261,13 +261,30 @@ footer {
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .loading { display: none; text-align: center; }
 .loading.show { display: block; }
+
+/* PROSPECTOR */
+.lead-card {
+  background: var(--surface); border: 1px solid var(--surface2);
+  border-radius: 10px; padding: 14px 16px; margin: 6px 0;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+}
+.lead-info { flex: 1; min-width: 200px; }
+.lead-name { font-weight: 600; font-size: 0.95rem; }
+.lead-detail { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
+.lead-phone { font-weight: 600; color: var(--accent); font-size: 0.9rem; white-space: nowrap; }
+.lead-rating { font-size: 0.8rem; color: var(--warning); }
+.lead-count { font-size: 0.9rem; color: var(--text2); margin: 8px 0; }
+.prospec-summary { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.prospec-stat { background: var(--surface2); padding: 10px 16px; border-radius: 8px; text-align: center; flex: 1; }
+.prospec-stat .num { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+.prospec-stat .lbl { font-size: 0.75rem; color: var(--text2); }
 </style>
 </head>
 <body>
 
 <nav>
   <a href="/" class="nav-logo">
-    <img src="logo.png" alt="TôNaIA">
+    <img src="/logo.png" alt="TôNaIA">
     <span>TôNa<em>IA</em></span>
   </a>
   <a href="#auditor"><button class="btn-nav">Auditar Grátis</button></a>
@@ -277,7 +294,7 @@ footer {
   <div class="container">
     <div class="hero-logo">
       <div class="hero-logo-wrap">
-        <img src="logo.png" alt="TôNaIA">
+        <img src="/logo.png" alt="TôNaIA">
       </div>
     </div>
     <h1>Seu negócio <span>invisível pra IA</span> é prejuízo todo dia</h1>
@@ -463,6 +480,30 @@ footer {
   </div>
 </section>
 
+<section id="prospector">
+  <div class="container">
+    <div class="section-label">Prospector</div>
+    <h2 class="section-title">Encontre clientes no Google Maps</h2>
+    <p class="section-desc">Busque estabelecimentos por nicho e cidade. Veja telefone, endereço, avaliações — leads quentes pra você abordar.</p>
+    <div class="auditor-box">
+      <h3>Buscar leads</h3>
+      <p>Escolha um nicho e uma cidade para encontrar negócios locais.</p>
+      <div class="input-group">
+        <input type="text" id="nicho" placeholder="Nicho (ex: barbeiro, clinica estetica, dentista)">
+        <input type="text" id="cidade" placeholder="Cidade (ex: Curitiba)">
+        <button onclick="prospectar()">Buscar</button>
+      </div>
+      <div class="loading" id="loadingProspec">
+        <div class="spinner"></div>
+        <p style="color:var(--text2); margin-top:12px;">Buscando estabelecimentos...</p>
+      </div>
+      <div class="resultado" id="resultadoProspec" style="display:none">
+        <div id="leadsLista"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="container">
     <p>TôNaIA © 2026 — Seu negócio visível pra Inteligência Artificial</p>
@@ -581,6 +622,47 @@ async function baixarPDF() {
   } catch (e) {
     alert('Erro ao gerar PDF');
   }
+}
+
+async function prospectar() {
+  const nicho = document.getElementById('nicho').value.trim();
+  const cidade = document.getElementById('cidade').value.trim();
+  if (!nicho || !cidade) { alert('Preencha nicho e cidade.'); return; }
+
+  document.getElementById('loadingProspec').classList.add('show');
+  document.getElementById('resultadoProspec').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/prospectar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nicho, cidade, max_resultados: 20 })
+    });
+    const data = await res.json();
+    if (data.erro) { alert(data.erro); return; }
+
+    let html = `<div class="prospec-summary">
+      <div class="prospec-stat"><div class="num">${data.encontrados}</div><div class="lbl">Encontrados</div></div>
+      <div class="prospec-stat"><div class="num">${data.salvos}</div><div class="lbl">Novos leads</div></div>
+    </div>`;
+
+    data.leads.forEach(l => {
+      const estrelas = l.rating ? '★'.repeat(Math.round(l.rating)) : '';
+      html += `<div class="lead-card">
+        <div class="lead-info">
+          <div class="lead-name">${l.nome}</div>
+          <div class="lead-detail">${l.endereco || ''} ${l.rating ? '<span class="lead-rating">' + estrelas + ' ' + l.rating + '</span>' : ''}</div>
+        </div>
+        <div class="lead-phone">${l.telefone || '—'}</div>
+      </div>`;
+    });
+
+    document.getElementById('leadsLista').innerHTML = html;
+    document.getElementById('resultadoProspec').style.display = 'block';
+  } catch (e) {
+    alert('Erro ao prospectar. Verifique se a API key do Google Maps está configurada.');
+  }
+  document.getElementById('loadingProspec').classList.remove('show');
 }
 </script>
 
