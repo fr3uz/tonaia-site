@@ -1,0 +1,16 @@
+{
+  "name": "tonaia-whatsapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servico WhatsApp da TonaIA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "qr": "node server.js --qr"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.23.0"
+  }
+}

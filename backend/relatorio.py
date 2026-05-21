@@ -1,12 +1,32 @@
 import os
 import io
 import base64
+import atexit
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 
-
 LOGO_PATH = os.path.join(os.path.dirname(__file__), '..', 'Logo', 'logo_tonaia.png')
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates', 'relatorio.html')
+
+_browser = None
+_playwright = None
+
+def _get_browser():
+    global _browser, _playwright
+    if _browser is None:
+        _playwright = sync_playwright().start()
+        _browser = _playwright.chromium.launch()
+        atexit.register(_cleanup)
+    return _browser
+
+def _cleanup():
+    global _browser, _playwright
+    if _browser:
+        _browser.close()
+        _browser = None
+    if _playwright:
+        _playwright.stop()
+        _playwright = None
 
 FONTES = {
     1: 'OpenAI, dados de uso do ChatGPT, 2026. 800M usuarios semanais.',
@@ -297,22 +317,19 @@ def gerar_relatorio(dados, caminho=None):
     html = html.replace('{MAIN_CONTENT}', main_content)
     html = html.replace('{FONTES}', html_fontes())
 
-    # --- Render PDF via Playwright ---
-    buf = io.BytesIO()
-
-    with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        page = browser.new_page()
-        page.set_content(html, wait_until='networkidle')
-        pdf_bytes = page.pdf(
-            format='A4',
-            margin={'top': '18mm', 'bottom': '22mm', 'left': '16mm', 'right': '16mm'},
-            display_header_footer=True,
-            header_template='<div style="width:100%;height:4px;background:#6C5CE7"></div>',
-            footer_template='<div style="font-size:7pt;color:#999;text-align:center;width:100%;font-family:Segoe UI,Arial,sans-serif">TôNaIA  |  ' + nome + '  |  Pág <span class="pageNumber"></span></div>',
-            print_background=True,
-        )
-        browser.close()
+    # --- Render PDF via Playwright (browser cacheado) ---
+    browser = _get_browser()
+    page = browser.new_page()
+    page.set_content(html, wait_until='networkidle')
+    pdf_bytes = page.pdf(
+        format='A4',
+        margin={'top': '18mm', 'bottom': '22mm', 'left': '16mm', 'right': '16mm'},
+        display_header_footer=True,
+        header_template='<div style="width:100%;height:4px;background:#6C5CE7"></div>',
+        footer_template='<div style="font-size:7pt;color:#999;text-align:center;width:100%;font-family:Segoe UI,Arial,sans-serif">TôNaIA  |  ' + nome + '  |  Pág <span class="pageNumber"></span></div>',
+        print_background=True,
+    )
+    page.close()
 
     if caminho:
         with open(caminho, 'wb') as f:
