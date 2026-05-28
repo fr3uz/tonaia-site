@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Questionário — TôNaIA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #f5f5fa; --surface: #ffffff; --surface2: #eeeef4;
+  --accent: #6c5ce7; --accent2: #7c6cf0; --green: #00b894;
+  --text: #1a1a2e; --text2: #666680; --danger: #ff6b6b;
+  --radius: 12px; --radius-lg: 20px;
+}
+body {
+  font-family: 'Inter', sans-serif; background: var(--bg);
+  color: var(--text); min-height: 100vh; padding: 16px;
+}
+.container { max-width: 640px; margin: 0 auto; }
+.header {
+  text-align: center; padding: 20px 0 10px;
+}
+.header img { height: 60px; margin-bottom: 10px; }
+.header h1 { font-size: 1.3rem; font-weight: 700; }
+.header h1 em { font-style: normal; color: var(--accent); }
+.header p { color: var(--text2); font-size: 0.85rem; margin-top: 4px; line-height: 1.5; }
+.card {
+  background: var(--surface); border: 1px solid var(--surface2);
+  border-radius: var(--radius-lg); padding: 28px 24px; margin-top: 16px;
+}
+.card h2 { font-size: 1.1rem; margin-bottom: 20px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
+.form-group .req { color: var(--danger); }
+.form-group .hint { font-size: 0.75rem; color: var(--text2); margin-bottom: 4px; line-height: 1.4; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 12px 16px; border: 1px solid var(--surface2);
+  border-radius: 10px; background: var(--surface); color: var(--text);
+  font-size: 0.95rem; outline: none; transition: 0.2s; font-family: inherit;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+.form-group textarea { min-height: 80px; resize: vertical; }
+.form-group .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.form-group .radio-opt {
+  padding: 10px 20px; border: 1px solid var(--surface2); border-radius: 8px;
+  cursor: pointer; font-size: 0.9rem; transition: 0.2s; user-select: none;
+}
+.form-group .radio-opt:hover { border-color: var(--accent); }
+.form-group .radio-opt.selected { border-color: var(--accent); background: rgba(108,92,231,0.1); font-weight: 600; }
+.btn-primary {
+  width: 100%; background: var(--accent); color: white; border: none;
+  padding: 16px; border-radius: 10px; font-weight: 700; font-size: 1rem;
+  cursor: pointer; transition: 0.2s;
+}
+.btn-primary:hover { background: #5a4bd1; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.spinner {
+  border: 3px solid var(--surface2); border-top: 3px solid var(--accent);
+  border-radius: 50%; width: 20px; height: 20px;
+  animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.success {
+  text-align: center; padding: 40px 20px;
+}
+.success .icon { font-size: 3rem; margin-bottom: 16px; }
+.success h2 { font-size: 1.3rem; margin-bottom: 8px; }
+.success p { color: var(--text2); font-size: 0.9rem; line-height: 1.5; }
+.progress-bar { display: flex; gap: 4px; margin-bottom: 24px; }
+.progress-step { flex: 1; height: 3px; border-radius: 2px; background: var(--surface2); transition: 0.3s; }
+.progress-step.done { background: var(--green); }
+.progress-step.active { background: var(--accent); }
+.form-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+.btn-secondary {
+  background: transparent; color: var(--text2); border: 1px solid var(--surface2);
+  padding: 12px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
+  cursor: pointer; transition: 0.2s;
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--text); }
+footer { text-align: center; padding: 30px 0; color: var(--text2); font-size: 0.75rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <img src="/logo.png" alt="TôNaIA">
+    <h1>TôNa<em>IA</em></h1>
+    <p>Responda as perguntas abaixo para gerarmos seu diagnóstico completo de visibilidade em Inteligência Artificial.</p>
+  </div>
+
+  <div class="card" id="formCard">
+    <div class="progress-bar" id="progressBar"></div>
+    <h2 id="formTitle">Questionário</h2>
+    <div id="formFields"></div>
+    <div class="form-footer">
+      <button class="btn-secondary" id="prevBtn" onclick="prevPage()" style="display:none;">Anterior</button>
+      <span id="counter" style="font-size:0.8rem;color:var(--text2);"></span>
+      <button class="btn-primary" id="nextBtn" onclick="nextPage()" style="width:auto;padding:12px 28px;">Próximo</button>
+    </div>
+  </div>
+
+  <div class="card" id="successCard" style="display:none;">
+    <div class="success">
+      <div class="icon">✅</div>
+      <h2>Questionário recebido com sucesso!</h2>
+      <p>Aguarde enquanto analisamos a relevância do seu negócio para as IAs.<br>Em breve entraremos em contato com o diagnóstico completo.</p>
+    </div>
+  </div>
+
+  <footer>TôNaIA © 2026</footer>
+</div>
+
+<script>
+const PP = 6;
+let campos = [];
+let pagina = 0;
+let respostas = {};
+let cliente = '';
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  cliente = params.get('cliente') || 'cliente';
+  document.getElementById('formTitle').textContent = 'Questionário para ' + cliente;
+
+  try {
+    const res = await fetch('/api/questionario/campos');
+    if (!res.ok) throw new Error('Erro ao carregar');
+    campos = await res.json();
+    renderizar();
+  } catch (e) {
+    document.getElementById('formFields').innerHTML =
+      '<p style="color:var(--danger);">Erro ao carregar questionário. Tente novamente.</p>';
+  }
+}
+
+function renderizar() {
+  const total = campos.length;
+  const totalPaginas = Math.ceil(total / PP);
+
+  const pb = document.getElementById('progressBar');
+  pb.innerHTML = '';
+  for (let i = 0; i < totalPaginas; i++) {
+    pb.innerHTML += '<div class="progress-step ' +
+      (i < pagina ? 'done' : i === pagina ? 'active' : '') + '"></div>';
+  }
+
+  const start = pagina * PP;
+  const end = Math.min(start + PP, total);
+  const page = campos.slice(start, end);
+
+  const fields = document.getElementById('formFields');
+  fields.innerHTML = '';
+  page.forEach(c => {
+    const val = respostas[c.id] || '';
+    const req = c.obrigatorio ? ' <span class="req">*</span>' : '';
+    let input = '';
+
+    if (c.tipo === 'text') {
+      input = '<input type="text" id="f-' + c.id + '" value="' + esc(val) + '" placeholder="' + esc(c.pergunta) + '">';
+    } else if (c.tipo === 'textarea') {
+      input = '<textarea id="f-' + c.id + '" placeholder="' + esc(c.pergunta) + '">' + esc(val) + '</textarea>';
+    } else if (c.tipo === 'boolean') {
+      input = '<div class="radio-group">' +
+        '<div class="radio-opt ' + (val === 'sim' ? 'selected' : '') + '" onclick="selBool(\'' + c.id + '\',true,this)">Sim</div>' +
+        '<div class="radio-opt ' + (val === 'nao' ? 'selected' : '') + '" onclick="selBool(\'' + c.id + '\',false,this)">Não</div>' +
+        '</div>';
+    } else if (c.tipo === 'select') {
+      const opts = (c.opcoes || []).map(o =>
+        '<option value="' + esc(o) + '" ' + (val === o ? 'selected' : '') + '>' + o + '</option>'
+      ).join('');
+      input = '<select id="f-' + c.id + '"><option value="">Selecione...</option>' + opts + '</select>';
+    }
+
+    const hint = (c.id === 'duvidas_comuns' || c.id === 'diferenciais' || c.id === 'observacoes')
+      ? '<div class="hint">Separe cada item em uma linha</div>' : '';
+
+    fields.innerHTML += '<div class="form-group"><label>' + esc(c.pergunta) + req + '</label>' + hint + input + '</div>';
+  });
+
+  document.getElementById('counter').textContent = (start + 1) + '-' + end + ' de ' + total;
+  document.getElementById('nextBtn').textContent = end >= total ? 'Enviar' : 'Próximo';
+  document.getElementById('prevBtn').style.display = pagina > 0 ? 'inline-block' : 'none';
+}
+
+function salvarPagina() {
+  const start = pagina * PP;
+  const end = Math.min(start + PP, campos.length);
+  for (let i = start; i < end; i++) {
+    const c = campos[i];
+    const el = document.getElementById('f-' + c.id);
+    if (el) respostas[c.id] = el.value;
+  }
+}
+
+function selBool(id, val, el) {
+  respostas[id] = val ? 'sim' : 'nao';
+  const parent = el.parentElement;
+  parent.querySelectorAll('.radio-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function prevPage() {
+  salvarPagina();
+  if (pagina > 0) pagina--;
+  renderizar();
+}
+
+function nextPage() {
+  salvarPagina();
+  const total = campos.length;
+  const totalPaginas = Math.ceil(total / PP);
+
+  if (pagina >= totalPaginas - 1) {
+    enviar();
+  } else {
+    pagina++;
+    renderizar();
+  }
+}
+
+async function enviar() {
+  const btn = document.getElementById('nextBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Enviando...';
+
+  try {
+    const res = await fetch('/api/questionario/publico/salvar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ respostas, cliente })
+    });
+    if (!res.ok) throw new Error('Erro ao salvar');
+    document.getElementById('formCard').style.display = 'none';
+    document.getElementById('successCard').style.display = 'block';
+  } catch (e) {
+    alert('Erro ao enviar. Tente novamente.');
+    btn.disabled = false;
+    btn.innerHTML = 'Enviar';
+  }
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TôNaIA — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f5f5fa;
+  --surface: #ffffff;
+  --surface2: #eeeef4;
+  --accent: #6c5ce7;
+  --accent2: #7c6cf0;
+  --green: #00b894;
+  --text: #1a1a2e;
+  --text2: #666680;
+  --danger: #ff6b6b;
+  --warning: #e6a817;
+  --radius: 12px;
+  --radius-lg: 20px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 24px; max-width: 1200px; margin: 0 auto;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo img { height: 36px; }
+.nav-logo span { font-weight: 800; font-size: 1.2rem; color: var(--text); }
+.nav-logo span em { font-style: normal; color: var(--accent); }
+.nav-links { display: flex; gap: 12px; align-items: center; }
+.nav-links a {
+  color: var(--text2); text-decoration: none; font-size: 0.85rem; font-weight: 500;
+  padding: 8px 14px; border-radius: 8px; transition: 0.2s;
+}
+.nav-links a:hover { background: var(--surface2); color: var(--text); }
+.nav-links a.active { color: var(--accent); font-weight: 600; }
+
+.page-header { padding: 40px 0 30px; }
+.page-header h1 { font-size: 1.8rem; font-weight: 800; }
+.page-header p { color: var(--text2); margin-top: 6px; font-size: 0.95rem; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--surface2);
+  border-radius: var(--radius); padding: 20px; text-align: center;
+  position: relative; overflow: hidden; transition: 0.2s;
+}
+.stat-card:hover { border-color: var(--accent); }
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent); opacity: 0.4;
+}
+.stat-card .num { font-size: 2rem; font-weight: 800; color: var(--accent); }
+.stat-card .lbl { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 36px; }
+.card {
+  background: var(--surface); border: 1px solid var(--surface2);
+  border-radius: var(--radius-lg); padding: 28px;
+}
+.card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.card-header h3 { margin-bottom: 0; }
+
+.clientes-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.clientes-table th {
+  text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--surface2);
+  color: var(--text2); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.clientes-table td { padding: 10px 12px; border-bottom: 1px solid var(--surface2); }
+.clientes-table tr:hover { background: rgba(108,92,231,0.02); }
+.clientes-table .nome { font-weight: 600; }
+.clientes-table .nota { font-weight: 700; }
+.nota-alta { color: var(--green); }
+.nota-media { color: var(--warning); }
+.nota-baixa { color: var(--danger); }
+.clientes-table .acoes { display: flex; gap: 6px; }
+.clientes-table .acoes button {
+  background: var(--surface2); border: none; padding: 4px 10px;
+  border-radius: 6px; cursor: pointer; font-size: 0.75rem; color: var(--text2); transition: 0.2s;
+}
+.clientes-table .acoes button:hover { background: var(--accent); color: white; }
+
+.chart-container { position: relative; height: 280px; width: 100%; }
+.chart-empty {
+  display: flex; align-items: center; justify-content: center;
+  height: 280px; color: var(--text2); font-size: 0.9rem;
+}
+
+.rank-list { }
+.rank-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--surface2);
+}
+.rank-item:last-child { border-bottom: none; }
+.rank-pos { font-weight: 800; color: var(--text2); font-size: 0.85rem; width: 24px; }
+.rank-name { font-weight: 500; flex: 1; }
+.rank-score { font-weight: 700; color: var(--accent); }
+
+footer {
+  border-top: 1px solid var(--surface2); padding: 24px 0; margin-top: 24px;
+  text-align: center; color: var(--text2); font-size: 0.8rem;
+}
+
+.spinner {
+  border: 3px solid var(--surface2); border-top: 3px solid var(--accent);
+  border-radius: 50%; width: 24px; height: 24px;
+  animation: spin 0.8s linear infinite; margin: 40px auto;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.loading { text-align: center; padding: 40px; }
+.empty-state { text-align: center; padding: 40px; color: var(--text2); }
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .nav-links { gap: 6px; }
+  .nav-links a { font-size: 0.75rem; padding: 6px 10px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/logo.png" alt="TôNaIA">
+    <span>TôNa<em>IA</em></span>
+  </a>
+    <div class="nav-links">
+      <a href="/">Auditoria</a>
+      <a href="#" class="active">Dashboard</a>
+      <button onclick="logout()" style="background:none;border:1px solid var(--surface2);color:var(--text2);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.8rem;">Sair</button>
+    </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+    <p>Acompanhe a evolução das suas auditorias</p>
+  </div>
+
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <div class="dashboard-grid">
+    <div class="card">
+      <div class="card-header">
+        <h3>Clientes Auditados</h3>
+        <span style="font-size:0.8rem;color:var(--text2)" id="clienteCount"></span>
+      </div>
+      <div id="clientesLista"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Evolução de Score</h3>
+        <span style="font-size:0.8rem;color:var(--text2)" id="chartClienteNome"></span>
+      </div>
+      <div id="chartContainer"><div class="chart-empty">Clique em um cliente para ver evolução</div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:36px">
+    <h3>Top Clientes (média)</h3>
+    <div id="topClientes"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<footer>
+  <div class="container"><p>TôNaIA © 2026 — Dashboard de Auditoria</p></div>
+</footer>
+
+<script>
+const token = sessionStorage.getItem('tonaia_token');
+
+function authFetch(url, opts) {
+  opts = opts || {};
+  opts.headers = opts.headers || {};
+  opts.headers['Authorization'] = 'Bearer ' + token;
+  return fetch(url, opts);
+}
+
+async function checkAuth() {
+  if (!token) { window.location.href = '/'; return false; }
+  try {
+    const res = await authFetch('/api/auth/check');
+    if (!res.ok) { window.location.href = '/'; return false; }
+    return true;
+  } catch { window.location.href = '/'; return false; }
+}
+
+function logout() {
+  sessionStorage.removeItem('tonaia_token');
+  window.location.href = '/';
+}
+
+let chartInstance = null;
+
+async function carregar() {
+  if (!(await checkAuth())) return;
+  await Promise.all([carregarStats(), carregarClientes(), carregarTop()]);
+}
+
+async function carregarStats() {
+  try {
+    const res = await authFetch('/api/dashboard/estatisticas');
+    const d = await res.json();
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="num">${d.total_clientes}</div><div class="lbl">Clientes</div></div>
+      <div class="stat-card"><div class="num">${d.total_auditorias}</div><div class="lbl">Auditorias totais</div></div>
+      <div class="stat-card"><div class="num">${d.media_geral}</div><div class="lbl">Média geral</div></div>
+      <div class="stat-card"><div class="num">${d.auditorias_hoje}</div><div class="lbl">Auditorias hoje</div></div>
+    `;
+  } catch (e) {
+    document.getElementById('statsGrid').innerHTML = '<div class="empty-state"><div class="icon">⚠</div><p>Servidor offline</p></div>';
+  }
+}
+
+async function carregarClientes() {
+  try {
+    const res = await authFetch('/api/dashboard/clientes');
+    const clientes = await res.json();
+    document.getElementById('clienteCount').textContent = `${clientes.length} cliente${clientes.length !== 1 ? 's' : ''}`;
+
+    if (clientes.length === 0) {
+      document.getElementById('clientesLista').innerHTML =
+        '<div class="empty-state"><div class="icon">📋</div><p>Nenhum cliente auditado ainda</p></div>';
+      return;
+    }
+
+    let html = `<table class="clientes-table">
+      <thead><tr>
+        <th>Cliente</th>
+        <th>URL</th>
+        <th>Última nota</th>
+        <th>Auditorias</th>
+        <th>Última</th>
+        <th></th>
+      </tr></thead><tbody>`;
+
+    clientes.forEach(c => {
+      const nota = c.ultima_nota || c.media_nota || 0;
+      const notaClass = nota >= 7 ? 'nota-alta' : nota >= 4 ? 'nota-media' : 'nota-baixa';
+      const data = c.ultima_auditoria ? new Date(c.ultima_auditoria).toLocaleDateString('pt-BR') : '-';
+      const url = c.url && c.url !== 'sem site' ? c.url.replace('GBP: ', '') : '-';
+      html += `<tr>
+        <td class="nome">${c.nome_cliente}</td>
+        <td style="color:var(--text2);font-size:0.8rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${url}</td>
+        <td class="nota ${notaClass}">${nota.toFixed(1)}</td>
+        <td>${c.total_auditorias}</td>
+        <td style="font-size:0.8rem;color:var(--text2)">${data}</td>
+        <td class="acoes">
+          <button onclick="verEvolucao('${c.nome_cliente.replace(/'/g, "\\'")}')">Evolução</button>
+        </td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('clientesLista').innerHTML = html;
+  } catch (e) {
+    document.getElementById('clientesLista').innerHTML =
+      '<div class="empty-state"><div class="icon">⚠</div><p>Erro ao carregar</p></div>';
+  }
+}
+
+async function verEvolucao(nome) {
+  document.getElementById('chartClienteNome').textContent = nome;
+  const container = document.getElementById('chartContainer');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  try {
+    const res = await authFetch(`/api/dashboard/evolucao/${encodeURIComponent(nome)}`);
+    const pontos = await res.json();
+    if (pontos.length === 0) {
+      container.innerHTML = '<div class="chart-empty">Sem dados de evolução</div>';
+      return;
+    }
+    container.innerHTML = '<div class="chart-container"><canvas id="chartCanvas"></canvas></div>';
+    const labels = pontos.map(p => new Date(p.created_at).toLocaleDateString('pt-BR'));
+    const data = pontos.map(p => p.nota);
+    if (chartInstance) chartInstance.destroy();
+    const ctx = document.getElementById('chartCanvas').getContext('2d');
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Nota',
+          data,
+          borderColor: '#6C5CE7',
+          backgroundColor: 'rgba(108,92,231,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: '#6C5CE7',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { min: 0, max: 10, ticks: { stepSize: 1, color: '#999' }, grid: { color: 'rgba(0,0,0,0.04)' } },
+          x: { ticks: { color: '#999', maxRotation: 45 }, grid: { display: false } }
+        }
+      }
+    });
+  } catch (e) {
+    container.innerHTML = '<div class="chart-empty">Erro ao carregar evolução</div>';
+  }
+}
+
+async function carregarTop() {
+  try {
+    const res = await authFetch('/api/dashboard/estatisticas');
+    const d = await res.json();
+    const top = d.top_clientes || [];
+    if (top.length === 0) {
+      document.getElementById('topClientes').innerHTML = '<div class="empty-state"><p>Nenhum cliente auditado</p></div>';
+      return;
+    }
+    let html = '<div class="rank-list">';
+    top.forEach((c, i) => {
+      html += `<div class="rank-item">
+        <span class="rank-pos">#${i + 1}</span>
+        <span class="rank-name">${c.nome_cliente}</span>
+        <span class="rank-score">${c.media}</span>
+      </div>`;
+    });
+    html += '</div>';
+    document.getElementById('topClientes').innerHTML = html;
+  } catch (e) {
+    document.getElementById('topClientes').innerHTML = '<div class="empty-state"><p>Erro ao carregar</p></div>';
+  }
+}
+
+carregar();
+</script>
+
+</body>
+</html>
